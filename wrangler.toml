@@ -1,0 +1,8 @@
+name="ixo-notifications-worker"
+main="src/index.ts"
+
+compatibility_date = "2022-11-22"
+
+kv_namespaces = [ 
+      { binding = "Notifications", id = "927c6e477bf6439e80d2567ec689a76e" }
+]
