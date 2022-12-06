@@ -47,10 +47,13 @@ app.post('/storeNotificationsAirtable', async (c) => {
 
 app.get('/getNotification/:did', async (c) => {
   const did = c.req.param('did')
-  let Notifications = await c.env.Notifications.get("Notifications");
+  let Notifications = JSON.parse(await c.env.Notifications.get("Notifications"));
   let userspecific = [];
 for (let index = 0; index < Notifications.length; index++) {
+
+  
     const element = Notifications[index];
+    console.log(element);
     if(element.Status != "Expired" && element.DID === did){
 
       userspecific.push(element);
