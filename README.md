@@ -34,12 +34,18 @@ Deploy
 yarn deploy
 ```
 
-Set the environment variables in [wrangler.toml](wrangler.toml)
-
-Create a D1 database called `notifications` and apply the [schema file](/schemas/schema.sql)
+Create a D1 database called `notifications`
 
 ```
-wrangler d1 execute notifications --file schemas/schema.sql
+npx wrangler d1 create notifications
+```
+
+Set the environment variables in [wrangler.toml](wrangler.toml)
+
+Apply the [schema file](/schemas/schema.sql)
+
+```
+npx wrangler d1 execute notifications --file schemas/schema.sql
 ```
 
 ## Routes
