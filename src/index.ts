@@ -1,69 +1,94 @@
-import { Hono } from 'hono'
-import { poweredBy } from 'hono/powered-by'
+import { Hono } from "hono";
+import { poweredBy } from "hono/powered-by";
+import { cors } from "hono/cors";
 
-
-export interface Bindings {
-  Notifications: KVNamespace
+interface Env {
+    AUTHORIZATION: string;
+    Notifications: D1Database;
 }
 
-const app = new Hono()
+interface Notification {
+    message: string;
+    status: string;
+    expires: string;
+    did: string;
+    type: string;
+}
 
-app.use('*', poweredBy())
+const app = new Hono<{ Bindings: Env }>();
 
-app.get('/', (c) => {
-
-  return c.text('Hello ixo-tc!')
-})
-
-app.post('/createNotification', async (c) => {
-  
-  const body = await c.req.json();
-
-  try {
-    await c.env.Notifications.put("Notifications", JSON.stringify(body));
-  } catch (error) {
-    console.log(error);
-    
-  }
-
-
-  return c.text(JSON.stringify(body))
-});
-
-app.post('/storeNotificationsAirtable', async (c) => {
-  
-  const body = await c.req.json();
-
-  try {
-    await c.env.Notifications.put("Notifications", JSON.stringify(body));
-  } catch (error) {
-    console.log(error);
-    
-  }
-
-
-  return c.text(JSON.stringify(body))
-});
-
-app.get('/getNotification/:did', async (c) => {
-  const did = c.req.param('did')
-  let Notifications = JSON.parse(await c.env.Notifications.get("Notifications"));
-  let userspecific = [];
-for (let index = 0; index < Notifications.length; index++) {
-
-  
-    const element = Notifications[index];
-    console.log(element);
-    if(element.Status != "Expired" && element.DID === did){
-
-      userspecific.push(element);
-
-
+app.use("*", poweredBy());
+app.use("*", cors());
+app.use("*", async (c, next) => {
+    if (c.req.header("Authorization") === c.env.AUTHORIZATION) {
+        await next();
+    } else {
+        return c.text("Authorization Failed");
     }
-  }
-  return c.text(JSON.stringify(userspecific));
 });
 
+app.get("/", (c) => {
+    return c.text("Hello IXO!");
+});
 
+app.post("/createNotification", async (c) => {
+    try {
+        const body: Notification = await c.req.json();
+        const result = await c.env.Notifications.prepare(
+            `
+        INSERT INTO notifications (message, status, expires, did, type) values (?, ?, ?, ?, ?)`,
+        )
+            .bind(body.message, body.status, body.expires, body.did, body.type)
+            .all();
+        return c.json(result);
+    } catch (error) {
+        return c.text(error);
+    }
+});
 
-export default app
+app.post("/storeNotificationsAirtable", async (c) => {
+    try {
+        const body: Notification = await c.req.json();
+        const result = await c.env.Notifications.prepare(
+            `
+        INSERT INTO notifications (message, status, expires, did, type) values (?, ?, ?, ?, ?)`,
+        )
+            .bind(body.message, body.status, body.expires, body.did, body.type)
+            .all();
+        return c.json(result);
+    } catch (error) {
+        return c.text(error);
+    }
+});
+
+app.get("/updateNotification/:id/:status", async (c) => {
+    try {
+        const id = c.req.param("id");
+        const status = c.req.param("status");
+        const result = await c.env.Notifications.prepare(
+            `UPDATE notifications SET status = ? WHERE id = ?`,
+        )
+            .bind(status, +id)
+            .all();
+        return c.json(result);
+    } catch (error) {
+        return c.text(error);
+    }
+});
+
+app.get("/getNotification/:did", async (c) => {
+    try {
+        const did = c.req.param("did");
+        const result = await c.env.Notifications.prepare(
+            `
+        SELECT * FROM notifications WHERE did = ?`,
+        )
+            .bind(did)
+            .all();
+        return c.json(result);
+    } catch (error) {
+        return c.text(error);
+    }
+});
+
+export default app;
