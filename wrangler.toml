@@ -9,9 +9,9 @@ AUTHORIZATION=""
 [[ d1_databases ]]
 binding = "Notifications"
 database_name = "notifications"
-database_id = "22a2f64f-b610-4d60-a7a6-5e8b90e02869"
+database_id = ""
 
 [[ d1_databases ]]
 binding = "Users"
 database_name = "users"
-database_id = "14469177-116b-4e9d-a1f0-6137a9ac9bb8"
+database_id = ""

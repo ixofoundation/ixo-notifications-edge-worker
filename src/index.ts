@@ -29,6 +29,7 @@ app.get('/', (c) => {
 	return c.text('Hello IXO!');
 });
 
+// [START] user routes
 app.get('/getUser/:did', async (c) => {
 	try {
 		const did = c.req.param('did');
@@ -84,7 +85,9 @@ app.post('/addOrUpdateUser', async (c) => {
 		return c.text(error?.message ?? error);
 	}
 });
+// [END] user routes
 
+// [START] notification routes
 app.post('/createNotification', async (c) => {
 	try {
 		const body: Notification = await c.req.json();
@@ -135,5 +138,6 @@ app.get('/getNotification/:did', async (c) => {
 		return c.text(error);
 	}
 });
+// [END] notification routes
 
 export default app;
