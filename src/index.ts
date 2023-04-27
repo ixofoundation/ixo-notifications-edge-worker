@@ -21,7 +21,7 @@ app.use('*', async (c, next) => {
 	if (c.req.header('Authorization') === c.env.AUTHORIZATION) {
 		await next();
 	} else {
-		return c.text('Authorization Failed');
+		return c.text('Authorization Failed', 401);
 	}
 });
 
@@ -37,8 +37,7 @@ app.get('/getUser/:did', async (c) => {
 		const result = await c.env.Users.prepare('SELECT * FROM users WHERE did = ?').bind(did).first();
 		return c.json(result);
 	} catch (error) {
-		console.error(error);
-		return c.text(error?.message ?? error);
+		return c.text(error?.message ?? error, 500);
 	}
 });
 
@@ -50,8 +49,7 @@ app.post('/addUser', async (c) => {
 			.all();
 		return c.json(result?.success);
 	} catch (error) {
-		console.error(error);
-		return c.text(error?.message ?? error);
+		return c.text(error?.message ?? error, 500);
 	}
 });
 
@@ -63,8 +61,7 @@ app.post('/updateUser', async (c) => {
 			.all();
 		return c.json(result?.success);
 	} catch (error) {
-		console.error(error);
-		return c.text(error?.message ?? error);
+		return c.text(error?.message ?? error, 500);
 	}
 });
 
@@ -81,8 +78,7 @@ app.post('/addOrUpdateUser', async (c) => {
 			.all();
 		return c.json(result?.success);
 	} catch (error) {
-		console.error(error);
-		return c.text(error?.message ?? error);
+		return c.text(error?.message ?? error, 500);
 	}
 });
 // [END] user routes
@@ -98,7 +94,7 @@ app.post('/createNotification', async (c) => {
 			.all();
 		return c.json(result);
 	} catch (error) {
-		return c.text(error);
+		return c.text(error, 500);
 	}
 });
 
@@ -112,7 +108,7 @@ app.post('/storeNotificationsAirtable', async (c) => {
 			.all();
 		return c.json(result);
 	} catch (error) {
-		return c.text(error);
+		return c.text(error, 500);
 	}
 });
 
@@ -125,7 +121,7 @@ app.get('/updateNotification/:id/:status', async (c) => {
 			.all();
 		return c.json(result);
 	} catch (error) {
-		return c.text(error);
+		return c.text(error, 500);
 	}
 });
 
@@ -135,7 +131,7 @@ app.get('/getNotification/:did', async (c) => {
 		const result = await c.env.Notifications.prepare('SELECT * FROM notifications WHERE did = ?').bind(did).all();
 		return c.json(result);
 	} catch (error) {
-		return c.text(error);
+		return c.text(error, 500);
 	}
 });
 // [END] notification routes
