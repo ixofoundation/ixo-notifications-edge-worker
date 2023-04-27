@@ -10,3 +10,8 @@ AUTHORIZATION=""
 binding = "Notifications"
 database_name = "notifications"
 database_id = ""
+
+[[ d1_databases ]]
+binding = "Users"
+database_name = "users"
+database_id = ""
