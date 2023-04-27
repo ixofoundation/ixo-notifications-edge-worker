@@ -4,35 +4,37 @@ This is a minimal project for storing and serving and creating notifications dat
 
 ## Features
 
--   Minimal
--   TypeScript
--   Wrangler to develop and deploy.
+- Minimal
+- TypeScript
+- Wrangler to develop and deploy.
 
 ## Usage
 
-Install
+### Install
 
 ```
 yarn install
 ```
 
-Develop
+### Develop
 
 ```
 yarn dev
 ```
 
-Test
+### Test
 
 ```
 yarn test
 ```
 
-Deploy
+### Deploy
 
 ```
 yarn deploy
 ```
+
+### Create Database
 
 Create a D1 database called `notifications`
 
@@ -40,35 +42,86 @@ Create a D1 database called `notifications`
 npx wrangler d1 create notifications
 ```
 
-Set the environment variables in [wrangler.toml](wrangler.toml)
-
-Apply the [schema file](/schemas/schema.sql)
+Create a D1 database called `users`
 
 ```
-npx wrangler d1 execute notifications --file schemas/schema.sql
+npx wrangler d1 create users
+```
+
+### Env vars and schema
+
+Set the environment variables in [wrangler.toml](wrangler.toml)
+
+Apply the [notifications schema file](/schemas/notifications.sql)
+
+```
+npx wrangler d1 execute notifications --file schemas/notifications.sql
+```
+
+Apply the [users schema file](/schemas/users.sql)
+
+```
+npx wrangler d1 execute users --file schemas/users.sql
 ```
 
 ## Routes
 
--   POST `/createNotification`
+- GET `/getUser/:did`
 
-    ```
-    {
-        "message": "string",
-        "status": "string",
-        "expires": "string",
-        "did": "string",
-        "type": "string"
-    }
-    ```
+- POST `/addUser`
 
--   GET `/updateNotification/:id/:status`
+  ```json
+  {
+  	"did": "string",
+  	"token": "string"
+  }
+  ```
 
--   GET `/getNotification/:did`
+- POST `/updateUser`
 
-## Author
+  ```json
+  {
+  	"did": "string",
+  	"token": "string"
+  }
+  ```
 
-Andrew Margetts <https://github.com/demondayza>
+- POST `/addOrUpdateUser`
+
+  ```json
+  {
+  	"did": "string",
+  	"token": "string"
+  }
+  ```
+
+- POST `/createNotification`
+
+  ```json
+  {
+  	"message": "string",
+  	"status": "string",
+  	"expires": "string",
+  	"did": "string",
+  	"type": "string"
+  }
+  ```
+
+- POST `/storeNotificationsAirtable`
+
+  ```json
+  {
+  	"message": "string",
+  	"status": "string",
+  	"expires": "string",
+  	"did": "string",
+  	"type": "string"
+  }
+  ```
+
+- GET `/updateNotification/:id/:status`
+
+- GET `/getNotification/:did`
 
 ## License
 
