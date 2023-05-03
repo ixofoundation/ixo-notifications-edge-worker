@@ -13,11 +13,11 @@ CREATE TABLE notifications (
     error TEXT NULL
 );
 
--- DROP TABLE IF EXISTS users;
--- CREATE TABLE users (
---     id INTEGER PRIMARY KEY AUTOINCREMENT,
---     did VARCHAR NOT NULL UNIQUE,
---     token VARCHAR NOT NULL,
---     network VARCHAR NOT NULL,
---     updatedAt DATETIME NOT NULL
--- )
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    did VARCHAR NOT NULL UNIQUE,
+    token VARCHAR NOT NULL,
+    network VARCHAR NOT NULL,
+    updatedAt DATETIME NOT NULL
+)
