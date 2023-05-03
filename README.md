@@ -42,86 +42,73 @@ Create a D1 database called `notifications`
 npx wrangler d1 create notifications
 ```
 
-Create a D1 database called `users`
-
-```
-npx wrangler d1 create users
-```
-
 ### Env vars and schema
 
 Set the environment variables in [wrangler.toml](wrangler.toml)
 
-Apply the [notifications schema file](/schemas/notifications.sql)
+Apply the [schema file](/schemas/schema.sql)
 
 ```
-npx wrangler d1 execute notifications --file schemas/notifications.sql
-```
-
-Apply the [users schema file](/schemas/users.sql)
-
-```
-npx wrangler d1 execute users --file schemas/users.sql
+npx wrangler d1 execute notifications --file schemas/schema.sql
 ```
 
 ## Routes
 
-- GET `/getUser/:did`
+### users (v1)
 
-- POST `/addUser`
+- GET `/users`
 
-  ```json
-  {
-  	"did": "string",
-  	"token": "string"
-  }
-  ```
+- GET `/users/:did`
 
-- POST `/updateUser`
+- POST `/users`
 
   ```json
   {
   	"did": "string",
-  	"token": "string"
+  	"token": "string",
+  	"network": "string"
   }
   ```
 
-- POST `/addOrUpdateUser`
+- PUT `/users/:did`
 
   ```json
   {
-  	"did": "string",
-  	"token": "string"
+  	"token": "string",
+  	"network": "string"
   }
   ```
 
-- POST `/createNotification`
+- DELETE `/users/:did`
+
+### notifications (v1)
+
+- GET `/notifications`
+- GET `/notifications/did/:did?date`
+  - date (optional): `YYYY-MM-DD hh:mm:ss`
+- GET `/notifications/id/:id`
+
+- POST `/notifications/:did`
 
   ```json
   {
+  	"title": "string",
   	"message": "string",
   	"status": "string",
-  	"expires": "string",
-  	"did": "string",
+  	"expireAt": "string",
   	"type": "string"
   }
   ```
 
-- POST `/storeNotificationsAirtable`
+- PATCH `/notifications/status/:id`
 
   ```json
   {
-  	"message": "string",
-  	"status": "string",
-  	"expires": "string",
-  	"did": "string",
-  	"type": "string"
+  	"status": "string"
   }
   ```
 
-- GET `/updateNotification/:id/:status`
-
-- GET `/getNotification/:did`
+- DELETE `/notifications/:id`
 
 ## License
 
