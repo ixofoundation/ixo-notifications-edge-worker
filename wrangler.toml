@@ -1,5 +1,6 @@
 name="ixo-notifications-worker"
 main="src/index.ts"
+node_compat = true
 
 compatibility_date = "2022-11-22"
 
@@ -9,9 +10,4 @@ AUTHORIZATION=""
 [[ d1_databases ]]
 binding = "Notifications"
 database_name = "notifications"
-database_id = ""
-
-[[ d1_databases ]]
-binding = "Users"
-database_name = "users"
 database_id = ""

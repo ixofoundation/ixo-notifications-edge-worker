@@ -8,9 +8,13 @@
 	"scripts": {
 		"test": "jest --verbose",
 		"dev": "wrangler dev src/index.ts",
-		"deploy": "wrangler publish src/index.ts"
+		"deploy": "wrangler publish src/index.ts",
+		"db:list": "wrangler d1 list",
+		"db:create": "wrangler d1 create notifications",
+		"db:schema": "wrangler d1 execute notifications --file schemas/schema.sql"
 	},
 	"dependencies": {
+		"expo-server-sdk": "3.6.0",
 		"hono": "^2.5.7"
 	},
 	"devDependencies": {
