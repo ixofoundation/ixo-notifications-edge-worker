@@ -37,7 +37,10 @@ app.get('/', (c) => {
 // [START] user routes
 app.get('/v1/users', async (c) => {
 	try {
-		const result = await c.env.Notifications.prepare('SELECT * FROM users').all();
+		const dump = !!c.req.query('dump');
+		const result = dump
+			? await c.env.Notifications.prepare('SELECT * FROM users').all()
+			: await c.env.Notifications.prepare('SELECT * FROM users WHERE status = ?1').bind('active').all();
 		return c.json(result?.results ?? []);
 	} catch (error) {
 		console.error('GET /v1/users', error);
@@ -48,7 +51,12 @@ app.get('/v1/users', async (c) => {
 app.get('/v1/users/:did', async (c) => {
 	try {
 		const did = c.req.param('did');
-		const result = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?').bind(did).first();
+		const dump = !!c.req.query('dump');
+		const result = dump
+			? await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?1').bind(did).first()
+			: await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?1 AND status = ?2')
+					.bind(did, 'active')
+					.first();
 		return c.json(result);
 	} catch (error) {
 		console.error('GET /v1/users/:did', error);
@@ -62,10 +70,10 @@ app.post('/v1/users', async (c) => {
 		const user = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?1').bind(body.did).first();
 		const result = await c.env.Notifications.prepare(
 			user
-				? 'UPDATE users SET token = ?2, network = ?3, updatedAt = DATETIME() WHERE did = ?1'
-				: 'INSERT INTO users (did, token, network, updatedAt) VALUES (?1, ?2, ?3, DATETIME())',
+				? 'UPDATE users SET token = ?2, network = ?3, status = ? 4, updatedAt = DATETIME() WHERE did = ?1'
+				: 'INSERT INTO users (did, token, network, status, updatedAt) VALUES (?1, ?2, ?3, ?4, DATETIME())',
 		)
-			.bind(body.did, body.token, body.network)
+			.bind(body.did, body.token, body.network, body.status ?? 'active')
 			.all();
 		return c.json(result?.success);
 	} catch (error) {
@@ -79,9 +87,9 @@ app.put('/v1/users/:did', async (c) => {
 		const did = c.req.param('did');
 		const body: UserRequest = await c.req.json();
 		const result = await c.env.Notifications.prepare(
-			'UPDATE users SET token = ?2, network = ?3, updatedAt = DATETIME() WHERE did = ?1',
+			'UPDATE users SET token = ?2, network = ?3, status = ?4, updatedAt = DATETIME() WHERE did = ?1',
 		)
-			.bind(did, body.token, body.network)
+			.bind(did, body.token, body.network, body.network ?? 'active')
 			.all();
 		return c.json(result?.success);
 	} catch (error) {
@@ -93,7 +101,9 @@ app.put('/v1/users/:did', async (c) => {
 app.delete('/v1/users/:did', async (c) => {
 	try {
 		const did = c.req.param('did');
-		const result = await c.env.Notifications.prepare('DELETE FROM users WHERE did = ?').bind(did).all();
+		const result = await c.env.Notifications.prepare('UPDATE users SET status = ?2 WHERE did = ?1')
+			.bind(did, 'inactive')
+			.all();
 		return c.json(result?.success);
 	} catch (error) {
 		console.error('DELETE /v1/users/:did', error);
@@ -105,7 +115,10 @@ app.delete('/v1/users/:did', async (c) => {
 // [START] notification routes
 app.get('/v1/notifications', async (c) => {
 	try {
-		const result = await c.env.Notifications.prepare('SELECT * FROM notifications').all();
+		const dump = !!c.req.query('dump');
+		const result = dump
+			? await c.env.Notifications.prepare('SELECT * FROM notifications').all()
+			: await c.env.Notifications.prepare('SELECT * FROM notifications WHERE status = ?').bind('active').all();
 		return c.json(result?.results);
 	} catch (error) {
 		console.error('GET /v1/notifications', error);
@@ -117,11 +130,16 @@ app.get('/v1/notifications/did/:did', async (c) => {
 	try {
 		const did = c.req.param('did');
 		const date = c.req.query('date');
+		const dump = !!c.req.query('dump');
 		const dateObj = date ? new Date(date) : new Date();
 		const expireAt = dateObj.toISOString().replace('T', ' ').slice(0, -5);
-		const result = await c.env.Notifications.prepare('SELECT * FROM notifications WHERE did = ?1 AND expireAt >= ?2')
-			.bind(did, expireAt)
-			.all();
+		const result = dump
+			? await c.env.Notifications.prepare('SELECT * FROM notifications WHERE did = ?1').bind(did).all()
+			: await c.env.Notifications.prepare(
+					'SELECT * FROM notifications WHERE did = ?1 AND expireAt >= ?2 AND status = ?3',
+			  )
+					.bind(did, expireAt, 'active')
+					.all();
 		return c.json(result?.results ?? []);
 	} catch (error) {
 		console.error('GET /v1/notifications/did/:did', error);
@@ -143,7 +161,9 @@ app.get('/v1/notifications/id/:id', async (c) => {
 app.post('/v1/notifications/:did', async (c) => {
 	try {
 		const did = c.req.param('did');
-		const user: User = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?').bind(did).first();
+		const user: User = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?1 AND status = ?2')
+			.bind(did, 'active')
+			.first();
 
 		if (!user) throw new Error(`User with did '${did}' not found`);
 
@@ -163,6 +183,9 @@ app.post('/v1/notifications/:did', async (c) => {
 			)
 			.run();
 		const id = notificationResult.meta.last_row_id;
+
+		if (body.status !== 'active') return c.json({ success: false, id, error: 'Notification status is not active' });
+
 		const expo = new Expo();
 
 		if (!Expo.isExpoPushToken(user.token)) throw new Error(`Push token ${user.token} is not a valid Expo push token`);
@@ -188,7 +211,7 @@ app.post('/v1/notifications/:did', async (c) => {
 						.bind(ticket.details.error, id)
 						.run();
 
-		return c.json(result?.success);
+		return c.json({ success: result?.success, id });
 	} catch (error) {
 		console.error('POST /v1/notifications', error);
 		return c.text(error, 500);
@@ -201,7 +224,7 @@ app.get('/v1/notifications/receipts', async (c) => {
 			'SELECT * FROM notifications WHERE ticket IS NOT NULL AND receipt IS NULL',
 		).all();
 
-		if (!result.results?.length) return c.json(result?.success);
+		if (!result.results?.length) return c.json([]);
 
 		const expo = new Expo();
 		const receiptIds = result.results.map((r: Notification) => r.ticket);
@@ -211,7 +234,6 @@ app.get('/v1/notifications/receipts', async (c) => {
 		for (const chunk of receiptIdChunks) {
 			try {
 				let receipts = await expo.getPushNotificationReceiptsAsync(chunk);
-				console.log(receipts);
 
 				// The receipts specify whether Apple or Google successfully received the
 				// notification and information about an error, if one occurred.
@@ -230,7 +252,7 @@ app.get('/v1/notifications/receipts', async (c) => {
 						// You must handle the errors appropriately.
 						if (details?.error)
 							await c.env.Notifications.prepare('UPDATE notifications SET receipt = ?1, error = ?2 WHERE id = ?3')
-								.bind(status, details.error, notificationId)
+								.bind(status, details.error ?? '', notificationId)
 								.run();
 					}
 				}
@@ -238,9 +260,14 @@ app.get('/v1/notifications/receipts', async (c) => {
 				console.error(error);
 			}
 		}
-		return c.json(result?.success);
+
+		const notificationIds = result.results.map((r: Notification) => r.id);
+		const receiptResult = await c.env.Notifications.prepare(
+			`SELECT * FROM notifications WHERE id IN (${notificationIds.join(', ')})`,
+		).all();
+		return c.json(receiptResult.results);
 	} catch (error) {
-		console.error('GET /v1/notifications/tickets', error);
+		console.error('GET /v1/notifications/receipts', error);
 		return c.text(error, 500);
 	}
 });
@@ -261,8 +288,8 @@ app.patch('/v1/notifications/status/:id', async (c) => {
 app.delete('/v1/notifications/:id', async (c) => {
 	try {
 		const id = c.req.param('id');
-		const result = await c.env.Notifications.prepare('DELETE FROM notifications WHERE id = ?')
-			.bind(Number(id ?? 0))
+		const result = await c.env.Notifications.prepare('UPDATE notifications SET status = ?2 WHERE id = ?1')
+			.bind(Number(id ?? 0), 'inactive')
 			.all();
 		return c.json(result?.success);
 	} catch (error) {

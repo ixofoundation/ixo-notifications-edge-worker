@@ -39,7 +39,7 @@ yarn deploy
 Create a D1 database called `notifications`
 
 ```
-npx wrangler d1 create notifications
+yarn db:create
 ```
 
 ### Env vars and schema
@@ -49,10 +49,12 @@ Set the environment variables in [wrangler.toml](wrangler.toml)
 Apply the [schema file](/schemas/schema.sql)
 
 ```
-npx wrangler d1 execute notifications --file schemas/schema.sql
+yarn db:schema
 ```
 
 ## Routes
+
+- GET `/`
 
 ### users (v1)
 
@@ -66,7 +68,8 @@ npx wrangler d1 execute notifications --file schemas/schema.sql
   {
   	"did": "string",
   	"token": "string",
-  	"network": "string"
+  	"network": "string",
+  	"status": "string"
   }
   ```
 
@@ -75,7 +78,8 @@ npx wrangler d1 execute notifications --file schemas/schema.sql
   ```json
   {
   	"token": "string",
-  	"network": "string"
+  	"network": "string",
+  	"status": "string"
   }
   ```
 
@@ -84,8 +88,11 @@ npx wrangler d1 execute notifications --file schemas/schema.sql
 ### notifications (v1)
 
 - GET `/notifications`
+
 - GET `/notifications/did/:did?date`
+
   - date (optional): `YYYY-MM-DD hh:mm:ss`
+
 - GET `/notifications/id/:id`
 
 - POST `/notifications/:did`
@@ -99,6 +106,8 @@ npx wrangler d1 execute notifications --file schemas/schema.sql
   	"type": "string"
   }
   ```
+
+- GET `/notifications/receipts`
 
 - PATCH `/notifications/status/:id`
 
