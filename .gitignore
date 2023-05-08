@@ -5,5 +5,9 @@ package-lock.json
 yarn.lock
 .cargo-ok
 
+wrangle.mainnet.toml
+wrangle.testnet.toml
+wrangle.devnet.toml
+
 # Output of 'npm pack'
 *.tgz

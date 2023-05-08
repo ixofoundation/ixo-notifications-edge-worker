@@ -70,7 +70,7 @@ app.post('/v1/users', async (c) => {
 		const user = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?1').bind(body.did).first();
 		const result = await c.env.Notifications.prepare(
 			user
-				? 'UPDATE users SET token = ?2, network = ?3, status = ? 4, updatedAt = DATETIME() WHERE did = ?1'
+				? 'UPDATE users SET token = ?2, network = ?3, status = ?4, updatedAt = DATETIME() WHERE did = ?1'
 				: 'INSERT INTO users (did, token, network, status, updatedAt) VALUES (?1, ?2, ?3, ?4, DATETIME())',
 		)
 			.bind(body.did, body.token, body.network, body.status ?? 'active')
