@@ -1,37 +1,48 @@
 export type Notification = {
 	id: number;
-	title: string;
-	message: string;
-	status: string;
-	createdAt: string;
-	expireAt: string;
+	remoteId: string;
 	did: string;
-	type: string;
+	title: string;
+	subtitle?: string;
+	message: string;
+	image?: string;
+	type?: string;
+	status: 'active' | 'inactive';
+	expireAt?: string;
+	version?: number;
+	network: string;
 	ticket?: string;
 	receipt?: string;
 	error?: string;
+	sentAt?: string;
+	createdAt: string;
+	updatedAt: string;
 };
 
 export type NotificationRequest = {
-	title: string;
-	message: string;
-	status: string;
-	createdAt: string;
-	expireAt: string;
+	id: string;
 	did: string;
+	title: string;
+	subtitle?: string;
+	message: string;
+	image?: string;
 	type: string;
+	status?: string;
+	expireAt: string;
+	version?: number;
 };
 
 export type NotificationResponse = {
 	id: number;
-	title: string;
-	message: string;
-	status: string;
-	createdAt: string;
-	expireAt: string;
 	did: string;
-	type: string;
-	ticket?: string;
-	receipt?: string;
-	error?: string;
+	title: string;
+	subtitle?: string;
+	message: string;
+	image?: string;
+	type?: string;
+	status: 'active' | 'inactive';
+	expireAt?: string;
+	version?: number;
+	network: string;
+	createdAt: string;
 };

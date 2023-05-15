@@ -1,26 +1,28 @@
 export type User = {
+	id: number;
 	did: string;
 	token: string;
-	network: 'mainnet' | 'testnet' | 'devnet';
+	network: 'mainnet' | 'Impact Hub' | 'testnet' | 'Test Zone' | 'devnet' | 'Dev Net';
 	status: 'active' | 'inactive';
+	version?: string;
+	createdAt: string;
+	updatedAt: string;
 };
 
 export type UserRequest = {
 	did: string;
 	token: string;
-	network: 'mainnet' | 'testnet' | 'devnet';
+	network: 'mainnet' | 'Impact Hub' | 'testnet' | 'Test Zone' | 'devnet' | 'Dev Net';
 	status?: 'active' | 'inactive';
-	// os?: string;
-	// device?: string;
+	version?: string;
 };
 
 export type UserResponse = {
 	id: number;
 	did: string;
 	token: string;
-	network: 'mainnet' | 'testnet' | 'devnet';
+	network: 'mainnet' | 'Impact Hub' | 'testnet' | 'Test Zone' | 'devnet' | 'Dev Net';
 	status: 'active' | 'inactive';
-	// os?: string;
-	// device?: string;
+	createdAt: string;
 	updatedAt: string;
 };
