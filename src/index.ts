@@ -134,7 +134,7 @@ app.get('/v1/notifications', async (c) => {
 		const result = await c.env.Notifications.prepare(
 			dump
 				? 'SELECT * FROM notifications'
-				: 'SELECT id, did, title, subtitle, message, image, type, status, expireAt, version, network, createdAt FROM notifications WHERE status = "active"',
+				: 'SELECT id, did, title, subtitle, message, image, link, linkLabel, type, status, read, expireAt, version, network, createdAt FROM notifications WHERE status = "active"',
 		).all();
 
 		return c.json(result?.results);
@@ -154,7 +154,7 @@ app.get('/v1/notifications/did/:did', async (c) => {
 		const result = dump
 			? await c.env.Notifications.prepare('SELECT * FROM notifications WHERE did = ?1').bind(did).all()
 			: await c.env.Notifications.prepare(
-					'SELECT id, did, title, subtitle, message, image, type, status, expireAt, version, network, createdAt FROM notifications WHERE did = ?1 AND (expireAt IS NULL OR expireAt >= ?2) AND status = "active"',
+					'SELECT id, did, title, subtitle, message, image, link, linkLabel, type, status, read, expireAt, version, network, createdAt FROM notifications WHERE did = ?1 AND (expireAt IS NULL OR expireAt >= ?2) AND status = "active"',
 			  )
 					.bind(did, expireAt)
 					.all();
@@ -173,9 +173,9 @@ app.get('/v1/notifications/id/:id', async (c) => {
 		const result = await c.env.Notifications.prepare(
 			dump
 				? 'SELECT * FROM notifications WHERE id = ?'
-				: 'SELECT id, did, title, subtitle, message, image, type, status, expireAt, version, network, createdAt FROM notifications WHERE id = ?1 AND status "active"',
+				: 'SELECT id, did, title, subtitle, message, image, link, linkLabel, type, status, read, expireAt, version, network, createdAt FROM notifications WHERE id = ? AND status = "active"',
 		)
-			.bind(id, c.env.NETWORK)
+			.bind(id)
 			.first();
 
 		return c.json(result);
@@ -217,7 +217,7 @@ app.post('/v1/notifications/:did', async (c) => {
 
 		const now = new Date();
 		const notificationResult = await c.env.Notifications.prepare(
-			'INSERT INTO notifications (remoteId, did, title, subtitle, message, image, type, status, expireAt, version, network, createdAt, updatedAt) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, DATETIME(), DATETIME())',
+			'INSERT INTO notifications (remoteId, did, title, subtitle, message, image, link, linkLabel, type, status, expireAt, version, network, createdAt, updatedAt) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, DATETIME(), DATETIME())',
 		)
 			.bind(
 				body.id,
@@ -226,6 +226,8 @@ app.post('/v1/notifications/:did', async (c) => {
 				body.subtitle ?? null,
 				body.message,
 				body.image ?? null,
+				body.link ?? null,
+				body.linkLabel ?? null,
 				body.type ?? null,
 				body.status,
 				body.expireAt ?? null,
@@ -257,6 +259,8 @@ app.post('/v1/notifications/:did', async (c) => {
 					subtitle: body.subtitle,
 					message: body.message,
 					image: body.image,
+					link: body.link,
+					linkLabel: body.linkLabel,
 					type: body.type,
 					status: body.status,
 					expireAt: body.expireAt,
@@ -338,6 +342,20 @@ app.get('/v1/notifications/receipts', async (c) => {
 		return c.json(receiptResult.results);
 	} catch (error) {
 		console.error('GET /v1/notifications/receipts', error);
+		return c.text(error, 500);
+	}
+});
+
+app.patch('/v1/notifications/read/:id', async (c) => {
+	try {
+		const id = c.req.param('id');
+		const result = await c.env.Notifications.prepare(
+			'UPDATE notifications SET read = 1, updatedAt = DATETIME() WHERE id = ?',
+		)
+			.bind(Number(id ?? 0))
+			.all();
+		return c.json(result?.success);
+	} catch (error) {
 		return c.text(error, 500);
 	}
 });

@@ -5,10 +5,10 @@ node_compat = true
 compatibility_date = "2022-11-22"
 
 [vars]
-AUTHORIZATION=""
-NETWORK=""
+AUTHORIZATION="Bearer EW?h!or6v?tb?l/sVY4euxmhGhzSbhs3EHGBq8b581ukLlJpMEHBGW2?6lR?Y/9BH/vSYEnehAQF-r1Nr1!phco1VL-?mF/0KYD4iB!lOCeJU5?xbtKVYhXM2AF8?25orEulr5HfoTXChAfMrHH3-wZ5zv6oQe7CpGr4t9A!PH0WhP1SJurUOAIRa0fW0o!0BW4y8JXeT9oNziBBq6h9El=tQ?pS4n373Bc2rzdGTbER3K3TnQ5keAX6fMsFonx1"
+NETWORK="mainnet"
 
 [[ d1_databases ]]
 binding = "Notifications"
 database_name = "notifications"
-database_id = ""
+database_id = "1fe61e69-3ab2-4b7f-b31b-4108ad118db5"

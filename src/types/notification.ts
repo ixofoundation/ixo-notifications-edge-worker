@@ -6,11 +6,14 @@ export type Notification = {
 	subtitle?: string;
 	message: string;
 	image?: string;
+	link?: string;
+	linkLabel?: string;
 	type?: string;
 	status: 'active' | 'inactive';
 	expireAt?: string;
 	version?: number;
 	network: string;
+	read: boolean;
 	ticket?: string;
 	receipt?: string;
 	error?: string;
@@ -26,6 +29,8 @@ export type NotificationRequest = {
 	subtitle?: string;
 	message: string;
 	image?: string;
+	link?: string;
+	linkLabel?: string;
 	type: string;
 	status?: string;
 	expireAt: string;
@@ -39,10 +44,13 @@ export type NotificationResponse = {
 	subtitle?: string;
 	message: string;
 	image?: string;
+	link?: string;
+	linkLabel?: string;
 	type?: string;
 	status: 'active' | 'inactive';
 	expireAt?: string;
 	version?: number;
 	network: string;
+	read: boolean;
 	createdAt: string;
 };
