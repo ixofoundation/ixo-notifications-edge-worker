@@ -18,6 +18,7 @@
 		"db:schema:d": "wrangler d1 execute notifications_devnet --file schemas/schema.sql"
 	},
 	"dependencies": {
+		"airtable": "0.12.1",
 		"expo-server-sdk": "3.6.0",
 		"hono": "^2.5.7"
 	},

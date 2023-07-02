@@ -13,18 +13,16 @@ import {
 	updateNotificationAsRead,
 	updateNotificationStatus,
 	deleteNotification,
+	uploadNotification,
 } from './handlers/notification';
 
 const app = new Hono<{
 	Bindings: {
 		AUTHORIZATION: string;
-		NETWORK: 'devnet' | 'testnet' | 'mainnet';
 		Notifications: D1Database;
-		// AIRTABLE_API_KEY: string;
-		// AIRTABLE_BASE_URL: string;
-		// AIRTABLE_BASE_ID: string;
-		// AIRTABLE_TABLE_USERS: string;
-		// AIRTABLE_TABLE_NOTIFICATIONS: string;
+		AIRTABLE_API_KEY: string;
+		AIRTABLE_BASE_ID: string;
+		AIRTABLE_TABLE_NOTIFICATIONS: string;
 	};
 }>();
 
@@ -64,6 +62,8 @@ app.get('/v1/notifications/did/:did', readNotificationByDid);
 app.get('/v1/notifications/id/:id', readNotificationById);
 
 app.get('/v1/notifications/remoteId/:remoteId', readNotificationByRemoteId);
+
+app.post('/v1/notifications', uploadNotification);
 
 app.post('/v1/notifications/:did', createNotification);
 

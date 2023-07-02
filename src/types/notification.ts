@@ -22,6 +22,20 @@ export type Notification = {
 	updatedAt: string;
 };
 
+export type NotificationUploadRequest = {
+	did: string;
+	title: string;
+	subtitle?: string;
+	message: string;
+	image?: string;
+	link?: string;
+	linkLabel?: string;
+	type: string;
+	expireAt?: string;
+	network: 'mainnet' | 'testnet' | 'devnet';
+	status: 'active' | 'inactive';
+};
+
 export type NotificationRequest = {
 	id: string;
 	did: string;
@@ -35,6 +49,7 @@ export type NotificationRequest = {
 	status?: string;
 	expireAt: string;
 	version?: number;
+	network: 'mainnet' | 'testnet' | 'devnet';
 };
 
 export type NotificationResponse = {
