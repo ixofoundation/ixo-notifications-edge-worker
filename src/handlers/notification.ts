@@ -1,6 +1,11 @@
 import Expo, { ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
-import { Notification, NotificationRequest, NotificationUploadRequest } from '../types/notification';
+import {
+	Notification,
+	NotificationRequest,
+	NotificationUploadRequest,
+	PurchaseNotificationUploadRequest,
+} from '../types/notification';
 import { User } from '../types/user';
 
 export const readNotifications = async (c) => {
@@ -137,6 +142,69 @@ export const uploadNotification = async (c) => {
 	}
 };
 
+export const uploadPurchaseNotification = async (c) => {
+	try {
+		const body: PurchaseNotificationUploadRequest = await c.req.json();
+		const upload: boolean = !c.req.query('preview');
+
+		if (!body.did) throw new Error('Did is required to upload notification');
+		if (!body.url) throw new Error('Url is required to upload notification');
+		// if (!body.title) throw new Error('Title is required to upload notification');
+		// if (!body.message) throw new Error('Message is required to upload notification');
+		if (body.expireAt && !new Date(body.expireAt))
+			throw new Error('Valid expiration date required to upload notification');
+		if (
+			body.image &&
+			!/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/.test(
+				body.image,
+			)
+		)
+			throw new Error('Valid image url (https only) required to upload notification');
+		if (!['mainnet', 'testnet', 'devnet'].includes(body.network))
+			throw new Error('Valid network required to upload notification');
+
+		const notification = {
+			did: body.did,
+			title: 'Thank you for your purchase', // TODO: hardcoded or dynamic? if hardcoded, what is title?
+			subtitle: null,
+			message: 'Your purchase is complete and your NFT is transferred to your wallet.', // TODO: hardcoded or dynamic? if hardcoded, what is message?
+			image: body.image ?? null,
+			link: body.link ?? null,
+			linkLabel: body.link ? body.linkLabel ?? 'View here' : null,
+			type: 'purchase',
+			expireAt: body.expireAt ? new Date(body.expireAt).toISOString().replace('T', ' ').slice(0, -5) : null,
+			network: body.network,
+			status: 'active',
+			createdAt: new Date().toISOString().replace('T', ' ').slice(0, -5),
+		};
+
+		if (!upload) return c.json(notification);
+
+		const result = await fetch(
+			`https://api.airtable.com/v0/${c.env.AIRTABLE_BASE_ID}/${c.env.AIRTABLE_TABLE_NOTIFICATIONS}`,
+			{
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${c.env.AIRTABLE_API_KEY}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					records: [
+						{
+							fields: notification,
+						},
+					],
+				}),
+			},
+		).then((res) => res.json());
+
+		return c.json(result);
+	} catch (error) {
+		console.error('POST /v1/notifications', error);
+		return c.text(error?.message ?? error?.cause ?? error, 500);
+	}
+};
+
 export const createNotification = async (c) => {
 	try {
 		const did = c.req.param('did');
@@ -155,7 +223,8 @@ export const createNotification = async (c) => {
 			)
 		)
 			throw new Error('Valid image url (https only) required to upload notification');
-		if (!['test', 'purchase'].includes(body.type)) throw new Error('Valid type required to upload notification');
+		if (!['test', 'purchase', 'feedback'].includes(body.type))
+			throw new Error('Valid type required to upload notification');
 		if (!['mainnet', 'testnet', 'devnet'].includes(body.network))
 			throw new Error('Valid network required to upload notification');
 
@@ -188,6 +257,12 @@ export const createNotification = async (c) => {
 		const id = notificationResult.meta.last_row_id;
 
 		if (body.status !== 'active') return c.json({ success: false, id, error: 'Notification status is not active' });
+
+		if (body.network !== 'mainnet' || body.type === 'test') {
+			const dids = await c.env.TESTERS.get('dids');
+			const testers = JSON.parse(dids);
+			if (!testers.includes(did)) throw new Error(`User with did '${did}' is not a tester`);
+		}
 
 		const expo = new Expo();
 

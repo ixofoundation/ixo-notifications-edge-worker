@@ -23,6 +23,7 @@ const app = new Hono<{
 		AIRTABLE_API_KEY: string;
 		AIRTABLE_BASE_ID: string;
 		AIRTABLE_TABLE_NOTIFICATIONS: string;
+		TESTERS: KVNamespace;
 	};
 }>();
 

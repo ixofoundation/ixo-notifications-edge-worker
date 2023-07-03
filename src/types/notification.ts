@@ -36,6 +36,19 @@ export type NotificationUploadRequest = {
 	status: 'active' | 'inactive';
 };
 
+export type PurchaseNotificationUploadRequest = {
+	did: string;
+	url: string;
+	title?: string;
+	subtitle?: string;
+	message?: string;
+	image?: string;
+	link?: string;
+	linkLabel?: string;
+	expireAt?: string;
+	network: 'mainnet' | 'testnet' | 'devnet';
+};
+
 export type NotificationRequest = {
 	id: string;
 	did: string;
