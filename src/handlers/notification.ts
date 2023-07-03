@@ -97,6 +97,8 @@ export const uploadNotification = async (c) => {
 			)
 		)
 			throw new Error('Valid image url (https only) required to upload notification');
+		if (body.link?.length && !/^impactsx:\/\//.test(body.link))
+			throw new Error('Valid link required to upload notification');
 		if (!['test', 'purchase'].includes(body.type)) throw new Error('Valid type required to upload notification');
 		if (!['mainnet', 'testnet', 'devnet'].includes(body.network))
 			throw new Error('Valid network required to upload notification');
@@ -152,7 +154,7 @@ export const uploadPurchaseNotification = async (c) => {
 		if (!['mainnet', 'testnet', 'devnet'].includes(body.network))
 			throw new Error('Valid network required to upload notification');
 
-		const link = `ixomobile://collection?did=${body.collection}`;
+		const link = `impactsx://collection?did=${body.collection}`;
 
 		const notification = {
 			did: body.did,
@@ -193,6 +195,8 @@ export const createNotification = async (c) => {
 		if (!body.id) throw new Error('Remote ID is required to send notifications');
 		if (!body.title) throw new Error('Title is required to send notifications');
 		if (!body.message) throw new Error('Message is required to send notifications');
+		if (body.link?.length && !/^impactsx:\/\//.test(body.link))
+			throw new Error('Valid link required to upload notification');
 		if (body.expireAt && !new Date(body.expireAt))
 			throw new Error('Valid expiration date required to upload notification');
 		if (
@@ -234,10 +238,11 @@ export const createNotification = async (c) => {
 			)
 			.run();
 		const id = notificationResult.meta.last_row_id;
-
+		console.log('notification::id', id);
 		if (body.status !== 'active') return c.json({ success: false, id, error: 'Notification status is not active' });
 
 		if (body.network !== 'mainnet' || body.type === 'test') {
+			console.log('notification::tester', { network: body.network, type: body.type });
 			const dids = await c.env.TESTERS.get('dids');
 			const testers = JSON.parse(dids);
 			if (!testers.includes(did)) throw new Error(`User with did '${did}' is not a tester`);
@@ -273,6 +278,7 @@ export const createNotification = async (c) => {
 				},
 			},
 		];
+		console.log('notification::message', !!messages);
 		const [chunk] = expo.chunkPushNotifications(messages);
 		const [ticket]: ExpoPushTicket[] = await expo.sendPushNotificationsAsync(chunk);
 		const result =
@@ -283,7 +289,7 @@ export const createNotification = async (c) => {
 				: await c.env.Notifications.prepare('UPDATE notifications SET error = ?1 WHERE id = ?2')
 						.bind(ticket.details.error, id)
 						.run();
-
+		console.log({ result });
 		return c.json({ success: result?.success, id });
 	} catch (error) {
 		console.error('POST /v1/notifications/:did', error);
