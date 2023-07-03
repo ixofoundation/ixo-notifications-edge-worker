@@ -14,6 +14,7 @@ import {
 	updateNotificationStatus,
 	deleteNotification,
 	uploadNotification,
+	uploadPurchaseNotification,
 } from './handlers/notification';
 
 const app = new Hono<{
@@ -66,7 +67,9 @@ app.get('/v1/notifications/remoteId/:remoteId', readNotificationByRemoteId);
 
 app.post('/v1/notifications', uploadNotification);
 
-app.post('/v1/notifications/:did', createNotification);
+app.post('/v1/notifications/purchase', uploadPurchaseNotification);
+
+app.post('/v1/notifications/did/:did', createNotification);
 
 app.get('/v1/notifications/receipts', readNotificationReceipts);
 

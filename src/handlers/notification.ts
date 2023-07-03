@@ -7,6 +7,7 @@ import {
 	PurchaseNotificationUploadRequest,
 } from '../types/notification';
 import { User } from '../types/user';
+import { uploadNotificationToAirtable } from '../utils/airtable';
 
 export const readNotifications = async (c) => {
 	try {
@@ -117,23 +118,11 @@ export const uploadNotification = async (c) => {
 
 		if (!upload) return c.json(notification);
 
-		const result = await fetch(
-			`https://api.airtable.com/v0/${c.env.AIRTABLE_BASE_ID}/${c.env.AIRTABLE_TABLE_NOTIFICATIONS}`,
-			{
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${c.env.AIRTABLE_API_KEY}`,
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					records: [
-						{
-							fields: notification,
-						},
-					],
-				}),
-			},
-		).then((res) => res.json());
+		const result = await uploadNotificationToAirtable(notification as NotificationUploadRequest, {
+			apiKey: c.env.AIRTABLE_API_KEY,
+			baseId: c.env.AIRTABLE_BASE_ID,
+			tableName: c.env.AIRTABLE_TABLE_NOTIFICATIONS,
+		});
 
 		return c.json(result);
 	} catch (error) {
@@ -148,9 +137,8 @@ export const uploadPurchaseNotification = async (c) => {
 		const upload: boolean = !c.req.query('preview');
 
 		if (!body.did) throw new Error('Did is required to upload notification');
-		if (!body.url) throw new Error('Url is required to upload notification');
-		// if (!body.title) throw new Error('Title is required to upload notification');
-		// if (!body.message) throw new Error('Message is required to upload notification');
+		if (!body.title) throw new Error('Title is required to upload notification');
+		if (!body.message) throw new Error('Message is required to upload notification');
 		if (body.expireAt && !new Date(body.expireAt))
 			throw new Error('Valid expiration date required to upload notification');
 		if (
@@ -160,17 +148,20 @@ export const uploadPurchaseNotification = async (c) => {
 			)
 		)
 			throw new Error('Valid image url (https only) required to upload notification');
+		if (!body.collection) throw new Error('Collection did is required to upload notification');
 		if (!['mainnet', 'testnet', 'devnet'].includes(body.network))
 			throw new Error('Valid network required to upload notification');
 
+		const link = `ixomobile://collection?did=${body.collection}`;
+
 		const notification = {
 			did: body.did,
-			title: 'Thank you for your purchase', // TODO: hardcoded or dynamic? if hardcoded, what is title?
-			subtitle: null,
-			message: 'Your purchase is complete and your NFT is transferred to your wallet.', // TODO: hardcoded or dynamic? if hardcoded, what is message?
+			title: body.title,
+			subtitle: body.subtitle ?? null,
+			message: body.message,
 			image: body.image ?? null,
-			link: body.link ?? null,
-			linkLabel: body.link ? body.linkLabel ?? 'View here' : null,
+			link: link,
+			linkLabel: body.linkLabel ?? 'View here',
 			type: 'purchase',
 			expireAt: body.expireAt ? new Date(body.expireAt).toISOString().replace('T', ' ').slice(0, -5) : null,
 			network: body.network,
@@ -180,23 +171,11 @@ export const uploadPurchaseNotification = async (c) => {
 
 		if (!upload) return c.json(notification);
 
-		const result = await fetch(
-			`https://api.airtable.com/v0/${c.env.AIRTABLE_BASE_ID}/${c.env.AIRTABLE_TABLE_NOTIFICATIONS}`,
-			{
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${c.env.AIRTABLE_API_KEY}`,
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					records: [
-						{
-							fields: notification,
-						},
-					],
-				}),
-			},
-		).then((res) => res.json());
+		const result = await uploadNotificationToAirtable(notification as NotificationUploadRequest, {
+			apiKey: c.env.AIRTABLE_API_KEY,
+			baseId: c.env.AIRTABLE_BASE_ID,
+			tableName: c.env.AIRTABLE_TABLE_NOTIFICATIONS,
+		});
 
 		return c.json(result);
 	} catch (error) {

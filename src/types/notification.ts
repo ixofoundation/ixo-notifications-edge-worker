@@ -34,19 +34,19 @@ export type NotificationUploadRequest = {
 	expireAt?: string;
 	network: 'mainnet' | 'testnet' | 'devnet';
 	status: 'active' | 'inactive';
+	createdAt?: string;
 };
 
 export type PurchaseNotificationUploadRequest = {
 	did: string;
-	url: string;
 	title?: string;
 	subtitle?: string;
 	message?: string;
 	image?: string;
-	link?: string;
 	linkLabel?: string;
 	expireAt?: string;
 	network: 'mainnet' | 'testnet' | 'devnet';
+	collection: string;
 };
 
 export type NotificationRequest = {
