@@ -3,6 +3,7 @@ import { poweredBy } from 'hono/powered-by';
 import { cors } from 'hono/cors';
 
 import { createUser, deleteUser, readUserByDid, readUsers, updateUser } from './handlers/user';
+import { syncUsersToAirtable } from './handlers/sync';
 import {
 	createNotification,
 	readNotificationByDid,
@@ -79,5 +80,9 @@ app.patch('/v1/notifications/status/:id', updateNotificationStatus);
 
 app.delete('/v1/notifications/:id', deleteNotification);
 // [END] notification routes
+
+// [START] sync routes
+app.get('/v1/sync/users/airtable', syncUsersToAirtable);
+// [END] sync routes
 
 export default app;

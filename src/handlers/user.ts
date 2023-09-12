@@ -1,3 +1,4 @@
+import { uploadUserToAirtable } from '../utils/airtable';
 import { User, UserRequest } from '../types/user';
 
 export const readUsers = async (c) => {
@@ -52,6 +53,18 @@ export const createUser = async (c) => {
 			.bind(body.did, body.token, body.network, body.status ?? 'active', body.version ?? null)
 			.all();
 
+		try {
+			const userData = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?').bind(body.did).first();
+			if (userData)
+				await uploadUserToAirtable(userData, {
+					apiKey: c.env.AIRTABLE_API_KEY,
+					baseId: c.env.AIRTABLE_BASE_ID,
+					tableName: c.env.AIRTABLE_TABLE_NOTIFICATION_USERS,
+				});
+		} catch (e) {
+			console.error('uploadUserToAirtable', e);
+		}
+
 		return c.json(result?.success);
 	} catch (error) {
 		console.error('POST /v1/users', error);
@@ -69,6 +82,18 @@ export const updateUser = async (c) => {
 			.bind(did, body.token, body.network, body.status ?? 'active', body.version ?? null)
 			.all();
 
+		try {
+			const userData = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?').bind(body.did).first();
+			if (userData)
+				await uploadUserToAirtable(userData, {
+					apiKey: c.env.AIRTABLE_API_KEY,
+					baseId: c.env.AIRTABLE_BASE_ID,
+					tableName: c.env.AIRTABLE_TABLE_NOTIFICATION_USERS,
+				});
+		} catch (e) {
+			console.error('uploadUserToAirtable', e);
+		}
+
 		return c.json(result?.success);
 	} catch (error) {
 		console.error('put /v1/users/:did', error);
@@ -82,6 +107,18 @@ export const deleteUser = async (c) => {
 		const result = await c.env.Notifications.prepare('UPDATE users SET status = ?2 WHERE did = ?1')
 			.bind(did, 'inactive')
 			.all();
+
+		try {
+			const userData = await c.env.Notifications.prepare('SELECT * FROM users WHERE did = ?').bind(did).first();
+			if (userData)
+				await uploadUserToAirtable(userData, {
+					apiKey: c.env.AIRTABLE_API_KEY,
+					baseId: c.env.AIRTABLE_BASE_ID,
+					tableName: c.env.AIRTABLE_TABLE_NOTIFICATION_USERS,
+				});
+		} catch (e) {
+			console.error('uploadUserToAirtable', e);
+		}
 
 		return c.json(result?.success);
 	} catch (error) {
