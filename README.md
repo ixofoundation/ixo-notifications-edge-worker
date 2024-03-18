@@ -1,58 +1,14 @@
 # ixo-notifications-worker
 
-This is a minimal project for storing and serving and creating notifications data using Cloudflare Workers.
+This is a minimal project for creating, storing and serving notifications using Cloudflare Workers.
 
-## Features
+## Development
 
-- Minimal
-- TypeScript
-- Wrangler to develop and deploy.
+Read more about development a [DEVELOP.md](./DEVELOP.md)
 
-## Usage
+## Endpoints
 
-### Install
-
-```
-yarn install
-```
-
-### Develop
-
-```
-yarn dev
-```
-
-### Test
-
-```
-yarn test
-```
-
-### Deploy
-
-```
-yarn deploy
-```
-
-### Create Database
-
-Create a D1 database called `notifications`
-
-```
-yarn db:create
-```
-
-### Env vars and schema
-
-Set the environment variables in [wrangler.toml](wrangler.toml)
-
-Apply the [schema file](/schemas/schema.sql)
-
-```
-yarn db:schema
-```
-
-## Routes
+> **Notice:** Notifications V2 is now available. Read through the [docs](./NOTIFICATIONS2.md).
 
 - GET `/`
 
